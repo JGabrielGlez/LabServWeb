@@ -246,25 +246,82 @@ app.get("/productos/:id", (req, res) => {
 // Parte 5
 // filtrar cuando cumpla con la categoría indicada
 // ?categoria=valor
+// app.get("/productos", (req, res) => {
+//   const categoria = req.query.categoria;
+//   let productosBuscados = [];
+
+//   if (categoria) {
+//     productosBuscados = productos.filter((e) => e.categoria === categoria);
+//     if (productosBuscados.length === 0) {
+//       res.status(404).json({
+//         mensaje: "Categoría no existe o no hay productos dentro de esta",
+//       });
+//     }
+//     res.json({
+//       mensaje: "Productos encontrados",
+//       productos: productosBuscados,
+//     });
+//   }
+//   res.status(404).json({
+//     mensaje: "Categoria no existe",
+//   });
+// });
+
 app.get("/productos", (req, res) => {
   const categoria = req.query.categoria;
-  let productosBuscados = [];
 
   if (categoria) {
-    productosBuscados = productos.filter((e) => e.categoria === categoria);
+    const productosBuscados = productos.filter(
+      (e) => e.categoria === categoria,
+    );
     if (productosBuscados.length === 0) {
-      res.status(404).json({
+      return res.status(404).json({
         mensaje: "Categoría no existe o no hay productos dentro de esta",
       });
     }
-    res.json({
+    return res.json({
       mensaje: "Productos encontrados",
       productos: productosBuscados,
     });
   }
-  res.status(404).json({
-    mensaje: "Categoria no existe",
+
+  // Si no hay categoría, devolver todos los productos
+  res.json({
+    productos,
   });
+});
+
+// Método put con autenticación de registros
+//     id: 1,
+//     nombre: "Cafe 1",
+//     precio: 1200,
+//     categoria: "electronicos",
+//     disponible: true,
+app.put("/productos/:id", auth, (req, res) => {
+  const body = req.body;
+  const id = parseInt(req.params.id);
+  const prod = productos.find((t) => t.id === id);
+  if (!prod) return res.status(404).json({ mensaje: "Producto no encontrada" });
+
+  // Captura de los datos de la tarea a actualizar
+  prod.nombre = body.nombre;
+  prod.precio = body.precio;
+  prod.categoria = body.categoria;
+  prod.disponible = body.disponible;
+
+  res.json({ mensaje: "Producto atualizado", prod });
+});
+
+app.delete("/productos/:id", auth, (req, res) => {
+  // Captar los datos enviados
+  const id = parseInt(req.params.id);
+  const indice = productos.findIndex((t) => t.id === id);
+
+  if (indice < 0) res.status(404).json({ mensaje: "Producto no existe" });
+
+  // Si se encuentra, es necesario eliminar únicamente ese producto del arreglo original
+  productos.splice(indice, 1);
+  res.json({ mensaje: "Producto eliminadaoexitosamente" });
 });
 
 // Paso 5 de la práctica 4, crear endpoint put

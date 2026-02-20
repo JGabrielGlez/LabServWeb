@@ -1,4 +1,5 @@
 const url = "http://localhost:3000/tareas";
+const urlExamen = "http://localhost:3000/productos";
 
 function cargar() {
   fetch(url)
@@ -28,4 +29,16 @@ function crear() {
     .then(() => {
       cargar();
     });
+}
+function cargarProductos() {
+  fetch(urlExamen)
+    .then((res) => res.json())
+    .then((data) => {
+      const lista = document.getElementById("listaProd");
+      lista.innerHTML = "";
+      data.productos.forEach((p) => {
+        lista.innerHTML += `<li>${JSON.stringify(p, null, 6)}</li>`;
+      });
+    })
+    .catch((error) => console.error("Error:", error));
 }
