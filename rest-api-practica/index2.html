@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Tareas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0e0e10;
+            --panel: #18181c;
+            --border: #2a2a30;
+            --accent: #e8ff5a;
+            --danger: #ff4f4f;
+            --patch: #5af0ff;
+            --text: #e8e8e8;
+            --muted: #666;
+            --radius: 10px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-bottom: 48px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.25s;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .card.put::before {
+            background: var(--accent);
+        }
+
+        .card.delete::before {
+            background: var(--danger);
+        }
+
+        .card.patch::before {
+            background: var(--patch);
+        }
+
+        .card:hover {
+            border-color: #444;
+        }
+
+        .card-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .put .card-label {
+            color: var(--accent);
+        }
+
+        .delete .card-label {
+            color: var(--danger);
+        }
+
+        .patch .card-label {
+            color: var(--patch);
+        }
+
+        .card h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        label {
+            display: block;
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.82rem;
+            padding: 10px 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #555;
+        }
+
+        select option {
+            background: var(--panel);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 72px;
+        }
+
+        button {
+            margin-top: 22px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .put button {
+            background: var(--accent);
+            color: #0e0e10;
+        }
+
+        .delete button {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .patch button {
+            background: var(--patch);
+            color: #0e0e10;
+        }
+
+        .method-pill {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+            vertical-align: middle;
+            position: relative;
+            top: -2px;
+        }
+
+        .put .method-pill {
+            background: #2a2f00;
+            color: var(--accent);
+        }
+
+        .delete .method-pill {
+            background: #2f0000;
+            color: var(--danger);
+        }
+
+        .patch .method-pill {
+            background: #002f33;
+            color: var(--patch);
+        }
+
+        .route-hint {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-bottom: 18px;
+            font-style: italic;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 18px 0 6px;
+        }
+
+        .optional-badge {
+            font-size: 0.55rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            font-style: italic;
+            margin-left: 4px;
+        }
+
+        .header-area {
+            max-width: 1100px;
+            margin: 0 auto 0;
+        }
+
+        :root {
+            --post: #7fff6e;
+            /* agrega esta variable junto a las demás */
+        }
+
+        .post::before {
+            background: var(--post);
+        }
+
+        .post .card-label {
+            color: var(--post);
+        }
+
+        .post .method-pill {
+            background: #0d2600;
+            color: var(--post);
+        }
+
+        .post button {
+            background: var(--post);
+            color: #0e0e10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-area">
+        <h1>API Tareas</h1>
+        <p class="subtitle">Panel de prueba — PUT · DELETE · PATCH</p>
+    </div>
+
+    <div class="grid">
+
+        <!-- PUT -->
+        <div class="card put">
+            <div class="card-label">Actualizar completo</div>
+            <h2>Editar tarea <span class="method-pill">PUT</span></h2>
+            <p class="route-hint">PUT /tareas/:id</p>
+
+            <label>ID de la tarea</label>
+            <input type="number" id="put-id" placeholder="ej. 3" min="1" />
+
+            <label>Título</label>
+            <input type="text" id="put-titulo" placeholder="Nuevo título" />
+
+            <label>Descripción</label>
+            <textarea id="put-descripcion" placeholder="Nueva descripción"></textarea>
+
+            <label>Estado</label>
+            <select id="put-estado">
+                <option value="pendiente">Pendiente</option>
+                <option value="en progreso">En progreso</option>
+                <option value="completada">Completada</option>
+            </select>
+
+            <label>Responsable</label>
+            <input type="text" id="put-responsable" placeholder="Nombre" />
+
+            <label>Fecha de inicio</label>
+            <input type="text" id="put-inicio" placeholder="ej. 1/1/2026" />
+
+            <label>Fecha de fin</label>
+            <input type="text" id="put-fin" placeholder="ej. 30/6/2026" />
+
+            <button onclick="alert('PUT listo para conectar')">Actualizar tarea completa</button>
+        </div>
+
+        <!-- DELETE -->
+        <div class="card delete">
+            <div class="card-label">Eliminar</div>
+            <h2>Borrar tarea <span class="method-pill">DELETE</span></h2>
+            <p class="route-hint">DELETE /tareas/:id</p>
+
+            <label>ID de la tarea a eliminar</label>
+            <input type="number" id="delete-id" placeholder="ej. 5" min="1" />
+
+            <button onclick="alert('DELETE listo para conectar')">Eliminar tarea</button>
+        </div>
+
+        <!-- PATCH -->
+        <div class="card patch">
+            <div class="card-label">Actualización parcial</div>
+            <h2>Modificar campo <span class="method-pill">PATCH</span></h2>
+            <p class="route-hint">PATCH /tareas/:id</p>
+
+            <label>ID de la tarea</label>
+            <input type="number" id="patch-id" placeholder="ej. 2" min="1" />
+
+            <div class="divider"></div>
+
+            <p style="font-size:0.68rem; color:var(--muted); margin-bottom:4px;">
+                Llena solo los campos que quieras actualizar.
+            </p>
+
+            <label>Título <span class="optional-badge">opcional</span></label>
+            <input type="text" id="patch-titulo" placeholder="Nuevo título (si aplica)" />
+
+            <label>Estado <span class="optional-badge">opcional</span></label>
+            <select id="patch-estado">
+                <option value="">— sin cambio —</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en progreso">En progreso</option>
+                <option value="completada">Completada</option>
+            </select>
+
+            <label>Responsable <span class="optional-badge">opcional</span></label>
+            <input type="text" id="patch-responsable" placeholder="Nuevo responsable (si aplica)" />
+
+            <label>Descripción <span class="optional-badge">opcional</span></label>
+            <textarea id="patch-descripcion" placeholder="Nueva descripción (si aplica)"></textarea>
+
+            <button onclick="alert('PATCH listo para conectar')">Aplicar cambios parciales</button>
+        </div>
+
+        <!-- POST -->
+        <div class="card post">
+            <div class="card-label">Crear nueva</div>
+            <h2>Nueva tarea <span class="method-pill">POST</span></h2>
+            <p class="route-hint">POST /tareas</p>
+
+            <label>Título</label>
+            <input type="text" id="post-titulo" placeholder="Título de la tarea" />
+
+            <label>Descripción</label>
+            <textarea id="post-descripcion" placeholder="Descripción de la tarea"></textarea>
+
+            <button onclick="alert('POST listo para conectar')">Crear tarea</button>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

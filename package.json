@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "prettier": "^3.8.1",
+    "supabase": "^2.76.9"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
